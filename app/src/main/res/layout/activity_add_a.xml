@@ -56,7 +56,7 @@
         app:layout_constraintTop_toBottomOf="@id/headerCard"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/WIP" />
+        app:srcCompat="@drawable/wip" />
 
     <!-- CardView untuk Transfer (Card 1) -->
     <androidx.cardview.widget.CardView
