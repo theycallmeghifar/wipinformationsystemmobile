@@ -89,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(Call<StatusResponse> call, Throwable t) {
                     Log.e("LoginError", "Error: " + t.getMessage());
-                    txtError.setText("Koneksi bermasalah !");
+                    txtError.setText("Tidak dapat terhubung dengan server !");
                     txtError.setTextColor(Color.parseColor("#ff3030"));
                     txtError.setVisibility(View.VISIBLE);
                 }
