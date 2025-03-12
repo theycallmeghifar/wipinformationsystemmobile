@@ -35,7 +35,7 @@ public class LoginActivity extends AppCompatActivity {
         prefLogin = getSharedPreferences("loginPref",MODE_PRIVATE);
         etUsername = (EditText) findViewById(R.id.username);
         etPassword = (EditText)findViewById(R.id.password);
-        txtError = findViewById(R.id.error_text);
+        txtError = findViewById(R.id.errorText);
         txtError.setVisibility(View.INVISIBLE);
 
         btnLogin = (Button)findViewById(R.id.btnLogin);

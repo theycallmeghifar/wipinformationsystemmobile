@@ -102,7 +102,7 @@
 
     <!-- Error Message -->
     <TextView
-        android:id="@+id/error_text"
+        android:id="@+id/errorText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""

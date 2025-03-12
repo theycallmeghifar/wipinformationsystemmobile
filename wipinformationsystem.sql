@@ -1,6 +1,6 @@
--- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.28, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: wiptrackingsystem
+-- Host: localhost    Database: wipinformationsystem
 -- ------------------------------------------------------
 -- Server version	5.5.5-10.4.27-MariaDB
 
@@ -93,7 +93,7 @@ CREATE TABLE `location` (
   `modifiedBy` varchar(45) DEFAULT NULL,
   `modifiedDate` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`locationId`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -102,7 +102,7 @@ CREATE TABLE `location` (
 
 LOCK TABLES `location` WRITE;
 /*!40000 ALTER TABLE `location` DISABLE KEYS */;
-INSERT INTO `location` VALUES (1,'Finishing',NULL,1,NULL,'2025-02-10 10:35:39',NULL,NULL),(2,'Machining','Line 22',1,'wip','2025-02-10 10:35:39','wip','2025-02-10 11:19:01'),(3,'Machining','Line 32',1,'wip','2025-02-10 10:36:16','','2025-02-10 11:18:55'),(4,'WIP','Jalur A',0,'wip','2025-02-10 11:23:44','wip','2025-02-10 11:25:37'),(5,'WIP','Jalur B',1,'wip','2025-02-10 11:24:57',NULL,NULL);
+INSERT INTO `location` VALUES (1,'Finishing',NULL,1,NULL,'2025-02-10 10:35:39',NULL,NULL),(2,'Machining','Line 1',1,'wip','2025-02-10 10:35:39','wip','2025-02-10 11:19:01'),(3,'Machining','Line 2',1,'wip','2025-02-10 10:36:16','','2025-02-10 11:18:55'),(4,'Machining','Line 3',0,'wip','2025-02-10 11:23:44','wip','2025-02-10 11:25:37'),(5,'Machining','Line 4',1,'wip','2025-02-10 11:24:57',NULL,NULL),(6,'Machining','Line 5',1,'wip','2025-02-10 11:24:57',NULL,NULL),(7,'WIP','Jalur A',1,'wip','2025-02-10 11:24:57',NULL,NULL),(8,'WIP','Jalur C',1,'wip','2025-02-10 11:24:57',NULL,NULL),(9,'WIP','Jalur D',1,'wip','2025-02-10 11:24:57',NULL,NULL),(10,'WIP','Jalur E',1,'wip','2025-02-10 11:24:57',NULL,NULL),(11,'WIP','Jalur F',1,'wip','2025-02-10 11:24:57',NULL,NULL),(12,'WIP','Jalur G',1,'wip','2025-02-10 11:24:57',NULL,NULL);
 /*!40000 ALTER TABLE `location` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -118,14 +118,14 @@ CREATE TABLE `order_item` (
   `itemCode` varchar(50) DEFAULT NULL,
   `cavity` varchar(45) DEFAULT NULL,
   `quantity` int(11) DEFAULT NULL,
-  `line` int(11) DEFAULT NULL,
+  `locationId` int(11) DEFAULT NULL,
   `status` int(11) DEFAULT NULL,
   `createdBy` varchar(45) DEFAULT NULL,
   `createdDate` datetime DEFAULT NULL,
   `modifiedBy` varchar(45) DEFAULT NULL,
   `modifiedDate` datetime DEFAULT NULL,
   PRIMARY KEY (`orderId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -134,6 +134,7 @@ CREATE TABLE `order_item` (
 
 LOCK TABLES `order_item` WRITE;
 /*!40000 ALTER TABLE `order_item` DISABLE KEYS */;
+INSERT INTO `order_item` VALUES (1,'CDLPA-0LBVALVE-002','A',100,2,2,'mc','2025-03-12 09:54:36',NULL,NULL),(2,'CDLPA-0LBVALVE-002','A',100,3,1,'mc','2025-03-12 10:07:12',NULL,NULL),(3,'CDLPA-0LBVALVE-003','A',100,2,1,'mc','2025-03-12 10:08:25',NULL,NULL),(4,'CDLPA-0LBVALVE-003','B',100,3,1,'mc','2025-03-12 10:20:25',NULL,NULL);
 /*!40000 ALTER TABLE `order_item` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -175,15 +176,16 @@ CREATE TABLE `wip_box` (
   `wipBoxId` int(11) NOT NULL AUTO_INCREMENT,
   `boxCode` varchar(50) DEFAULT NULL,
   `locationId` int(11) DEFAULT NULL,
-  `lineNumber` int(11) DEFAULT NULL,
   `stack` int(11) DEFAULT NULL,
+  `productionDate` date DEFAULT NULL,
+  `cavity` varchar(50) DEFAULT NULL,
   `status` int(11) DEFAULT NULL,
   `createdBy` varchar(45) DEFAULT NULL,
   `createdDate` datetime DEFAULT NULL,
   `modifiedBy` varchar(45) DEFAULT NULL,
   `modifiedDate` datetime DEFAULT NULL,
   PRIMARY KEY (`wipBoxId`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -192,7 +194,7 @@ CREATE TABLE `wip_box` (
 
 LOCK TABLES `wip_box` WRITE;
 /*!40000 ALTER TABLE `wip_box` DISABLE KEYS */;
-INSERT INTO `wip_box` VALUES (1,'BOX-00001',2,0,0,2,'fn','2025-02-10 08:59:16','wip','2025-02-12 11:00:27'),(2,'BOX-00002',1,NULL,0,1,'fn','2025-02-10 08:59:54','wip','2025-02-11 14:59:09'),(3,'BOX-00003',1,0,0,1,'fn','2025-02-10 09:01:40','wip','2025-02-11 15:36:09');
+INSERT INTO `wip_box` VALUES (4,'BOX-00001',4,1,'2025-03-12','A',1,NULL,NULL,NULL,NULL),(5,'BOX-00002',4,2,'2025-03-12','B',1,NULL,NULL,NULL,NULL),(6,'BOX-00003',4,3,'2025-03-12','C',1,NULL,NULL,NULL,NULL),(7,'BOX-00004',4,4,'2025-03-12','A',1,NULL,NULL,NULL,NULL),(8,'BOX-00005',4,5,'2025-03-12','C',1,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `wip_box` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -213,7 +215,7 @@ CREATE TABLE `wip_box_detail` (
   `modifiedBy` varchar(45) DEFAULT NULL,
   `modifiedDate` datetime DEFAULT NULL,
   PRIMARY KEY (`wipBoxDetailId`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -222,7 +224,7 @@ CREATE TABLE `wip_box_detail` (
 
 LOCK TABLES `wip_box_detail` WRITE;
 /*!40000 ALTER TABLE `wip_box_detail` DISABLE KEYS */;
-INSERT INTO `wip_box_detail` VALUES (1,1,'CDLPA-0LBVALVE-002',160,'fn','2025-02-10 08:59:54',NULL,NULL),(2,2,'CDLPA-0LBVALVE-003',100,'fn','2025-02-10 09:01:40',NULL,NULL),(3,2,'CDLPA-0LBVALVE-004',50,'fn','2025-02-10 09:01:40',NULL,NULL),(4,3,'CDLPA-0LBVALVE-005',140,'fn','2025-02-10 09:01:40',NULL,NULL);
+INSERT INTO `wip_box_detail` VALUES (5,4,'CDLPA-0LBVALVE-002',100,NULL,NULL,NULL,NULL),(6,5,'CDLPA-0LBVALVE-003',120,NULL,NULL,NULL,NULL),(7,6,'CDLPA-0LBVALVE-004',100,NULL,NULL,NULL,NULL),(8,7,'CDLPA-0LBVALVE-002',120,NULL,NULL,NULL,NULL),(9,8,'CDLPA-0LBVALVE-004',100,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `wip_box_detail` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -235,4 +237,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-03 20:37:06
+-- Dump completed on 2025-03-12 15:06:44
