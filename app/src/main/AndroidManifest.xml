@@ -32,6 +32,16 @@
         android:configChanges="orientation"
         android:exported="false"
         android:screenOrientation="portrait" />
+    <activity
+        android:name=".activities.TransferActivity"
+        android:configChanges="orientation"
+        android:exported="false"
+        android:screenOrientation="portrait" />
+    <activity
+        android:name=".activities.ScanActivity"
+        android:configChanges="orientation"
+        android:exported="false"
+        android:screenOrientation="portrait" />
         <activity
             android:name=".activities.SplashActivity"
             android:exported="true">

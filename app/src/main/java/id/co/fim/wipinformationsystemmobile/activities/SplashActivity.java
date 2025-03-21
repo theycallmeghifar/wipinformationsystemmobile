@@ -4,21 +4,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import id.co.fim.wipinformationsystemmobile.R;
-import id.co.fim.wipinformationsystemmobile.responses.ApiEndPoint;
-import id.co.fim.wipinformationsystemmobile.responses.StatusResponse;
-import id.co.fim.wipinformationsystemmobile.services.ApiClient;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class SplashActivity extends AppCompatActivity {
     private SharedPreferences prefLogin;

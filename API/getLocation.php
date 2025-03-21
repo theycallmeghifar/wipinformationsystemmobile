@@ -5,17 +5,18 @@ require_once 'mysqli.php';
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
-        $username = $_POST['username'];
-        $password = $_POST['password'];
+        $locationId = $_POST['locationId'];
 
-        $sql = $MySQLiconn->query("SELECT username, password, role
-                  FROM user
-                  WHERE username = '$username' and password = '$password' AND role IN (1,2)");
+        $sql = $MySQLiconn->query("SELECT locationId, area, line
+                    FROM location
+                    WHERE locationId = '$locationId' ");
         
-      if(mysqli_num_rows($sql) > 0){
+      if(mysqli_num_rows($sql) > 0) {
         while($row = $sql->fetch_array()){
              $response["responses"] = TRUE;
-             $response["role"] = (int) $row["role"];
+             $response["locationId"] = (int) $row["locationId"];
+             $response["area"] = $row["area"];
+             $response["line"] = $row["line"];
         }
             echo json_encode($response);
             

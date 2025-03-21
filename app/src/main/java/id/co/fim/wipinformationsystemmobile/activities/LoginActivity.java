@@ -13,9 +13,12 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.gson.Gson;
+
 import id.co.fim.wipinformationsystemmobile.R;
 import id.co.fim.wipinformationsystemmobile.responses.ApiEndPoint;
 import id.co.fim.wipinformationsystemmobile.responses.StatusResponse;
+import id.co.fim.wipinformationsystemmobile.responses.UserResponse;
 import id.co.fim.wipinformationsystemmobile.services.ApiClient;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -60,19 +63,22 @@ public class LoginActivity extends AppCompatActivity {
             txtError.setText("Password tidak boleh kosong !");
         }else {
             ApiEndPoint apiEndPoint = ApiClient.getClient().create(ApiEndPoint.class);
-            Call<StatusResponse> call = apiEndPoint.loginProcess(username, password);
+            Call<UserResponse> call = apiEndPoint.loginProcess(username, password);
 
-            call.enqueue(new Callback<StatusResponse>() {
+            call.enqueue(new Callback<UserResponse>() {
                 @Override
-                public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
+                public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                    Log.e("API Response", response.toString());
+                    Log.e("API Body", new Gson().toJson(response.body()));
 
-                    final StatusResponse statusResponse = response.body();
+                    final UserResponse userResponse = response.body();
 
-                    if (statusResponse.getResponses()) {
+                    if (userResponse.getResponses()) {
 
                         SharedPreferences.Editor editor = prefLogin.edit();
                         editor.putString("login", "1");
                         editor.putString("username", etUsername.getText().toString());
+                        editor.putInt("role", userResponse.getRole());
                         editor.commit();
 
                         Intent i = new Intent(LoginActivity.this, MenuActivity.class);
@@ -87,7 +93,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<StatusResponse> call, Throwable t) {
+                public void onFailure(Call<UserResponse> call, Throwable t) {
                     Log.e("LoginError", "Error: " + t.getMessage());
                     txtError.setText("Tidak dapat terhubung dengan server !");
                     txtError.setTextColor(Color.parseColor("#ff3030"));

@@ -31,7 +31,7 @@
         app:layout_constraintTop_toBottomOf="@id/imgWip"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="0dp"/>
 
     <!-- Username Input -->
     <com.google.android.material.textfield.TextInputLayout
@@ -123,10 +123,24 @@
         android:text="Versi 1.0"
         android:textSize="14sp"
         android:textColor="@android:color/darker_gray"
-        android:fontFamily="@font/sfprodisplayregular"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@id/copyright_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Copyright Text -->
+    <TextView
+        android:id="@+id/copyright_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="© 2025 Manajemen Informatika, Politeknik Astra.\nAll Rights Reserved."
+        android:textAlignment="center"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="20dp"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

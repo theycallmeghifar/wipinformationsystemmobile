@@ -38,7 +38,7 @@
         android:text="Versi 1.0"
         android:textSize="14sp"
         android:textColor="@android:color/darker_gray"
-        android:layout_marginBottom="30dp"
+        android:layout_marginBottom="10dp"
         app:layout_constraintBottom_toTopOf="@id/copyright_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
