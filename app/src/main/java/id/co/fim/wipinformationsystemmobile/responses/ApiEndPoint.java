@@ -3,9 +3,13 @@ package id.co.fim.wipinformationsystemmobile.responses;
 import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public interface ApiEndPoint {
+    @GET("checkConnection.php")
+    Call<StatusResponse> checkConnection();
+
     @FormUrlEncoded
     @POST("login.php")
     Call<UserResponse> loginProcess(@Field("username") String username,

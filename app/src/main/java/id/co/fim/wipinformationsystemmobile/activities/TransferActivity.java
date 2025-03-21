@@ -1,8 +1,5 @@
 package id.co.fim.wipinformationsystemmobile.activities;
 
-import static android.webkit.ConsoleMessage.MessageLevel.LOG;
-import static android.webkit.ConsoleMessage.MessageLevel.WARNING;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -31,10 +28,9 @@ import java.util.List;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import id.co.fim.wipinformationsystemmobile.APIResponseCallback;
 import id.co.fim.wipinformationsystemmobile.R;
-import id.co.fim.wipinformationsystemmobile.adapter.ItemInBoxAdapter;
+import id.co.fim.wipinformationsystemmobile.adapter.ListViewItemAdapter;
 import id.co.fim.wipinformationsystemmobile.model.ItemInBox;
 import id.co.fim.wipinformationsystemmobile.responses.ApiEndPoint;
-import id.co.fim.wipinformationsystemmobile.responses.BoxInfoResponse;
 import id.co.fim.wipinformationsystemmobile.responses.ItemInBoxResponse;
 import id.co.fim.wipinformationsystemmobile.responses.LocationResponse;
 import id.co.fim.wipinformationsystemmobile.responses.StatusResponse;
@@ -44,8 +40,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class TransferActivity extends AppCompatActivity {
-    private SharedPreferences pref;
     private SharedPreferences loginPref;
+    private SharedPreferences boxInfoPref;
     private SharedPreferences locationPref;
     private SharedPreferences scanTypePref;
     private CardView blueCard;
@@ -54,39 +50,6 @@ public class TransferActivity extends AppCompatActivity {
     private TextView tvBoxCode;
     private TextView tvCurrentLocation;
     private TextView tvDestinationLocation;
-    public void getLocation(int locationId) {
-        ApiEndPoint apiEndPoint = ApiClient.getClient().create(ApiEndPoint.class);
-        Call<LocationResponse> call = apiEndPoint.getLocation(locationId);
-
-        call.enqueue(new Callback<LocationResponse>() {
-            @Override
-            public void onResponse(Call<LocationResponse> call, Response<LocationResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().getResponses()) {
-                    LocationResponse locationResponse = response.body();
-                    SharedPreferences.Editor editor = pref.edit();
-                    editor.putString("currentArea", locationResponse.getArea());
-                    editor.putString("currentLine", locationResponse.getLine());
-                    editor.apply();
-                } else {
-
-                }
-            }
-
-            @Override
-            public void onFailure(Call<LocationResponse> call, Throwable t) {
-                Log.e("API_ERROR", "Error: " + t.getMessage(), t); // Tambahkan log error
-
-                final Handler handler = new Handler(Looper.getMainLooper());
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-
-                    }
-                }, 6000);
-            }
-        });
-    }
-
     private TextView tvNumber;
     private Spinner spnNumber;
     private TextView tvStack;
@@ -123,8 +86,8 @@ public class TransferActivity extends AppCompatActivity {
         spnStack = findViewById(R.id.spnStack);
 
         //inisiasi preference data
-        pref = getSharedPreferences("boxInfo",MODE_PRIVATE);
         loginPref = getSharedPreferences("loginPref",MODE_PRIVATE);
+        boxInfoPref = getSharedPreferences("boxInfo",MODE_PRIVATE);
         locationPref = getSharedPreferences("location", MODE_PRIVATE);
         scanTypePref = getSharedPreferences("scanType", MODE_PRIVATE);
         SharedPreferences.Editor editor = scanTypePref.edit();
@@ -132,18 +95,18 @@ public class TransferActivity extends AppCompatActivity {
         editor.apply();
 
         //ambil data lokasi box saat ini
-        getLocation(pref.getInt("currentLocationId", 0));
+        getLocation(boxInfoPref.getInt("currentLocationId", 0));
 
-        if (pref.getInt("status", 0) == 0) {
+        if (boxInfoPref.getInt("status", 0) == 0) {
             //button transfer n scan loc hide tampilin gambar perintah scan box
             btnTransfer.setVisibility(View.INVISIBLE);
             btnScanLocation.setVisibility(View.INVISIBLE);
             btnScanBox.setVisibility(View.VISIBLE);
             blueCard.setVisibility(View.INVISIBLE);
             imgPreScan.setVisibility(View.VISIBLE);
-        } else if (pref.getInt("status", 0) == 1) {
-            if (pref.getInt("destinationLocationId", 0) == 0) {
-                getItemInBox(pref.getInt("wipBoxId", 0));
+        } else if (boxInfoPref.getInt("status", 0) == 1) {
+            if (boxInfoPref.getInt("destinationLocationId", 0) == 0) {
+                getItemInBox(boxInfoPref.getInt("wipBoxId", 0));
 
                 btnTransfer.setVisibility(View.INVISIBLE);
                 btnScanBox.setVisibility(View.INVISIBLE);
@@ -155,23 +118,23 @@ public class TransferActivity extends AppCompatActivity {
                 tvStack.setVisibility(View.INVISIBLE);
                 spnStack.setVisibility(View.INVISIBLE);
 
-                tvBoxCode.setText("Kode Box: " + pref.getString("boxCode", ""));
+                tvBoxCode.setText("Kode Box: " + boxInfoPref.getString("boxCode", ""));
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        tvCurrentLocation.setText("Lokasi: " + pref.getString("currentArea", "") +
-                                " " + pref.getString("currentLine", "") +
-                                (pref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " +
-                                        pref.getInt("wipLineNumber", 0)) +
-                                (pref.getInt("stack", 0) == 0 ? "" : " Tumpukan " +
-                                        pref.getInt("stack", 0)));
+                        tvCurrentLocation.setText("Lokasi: " + boxInfoPref.getString("currentArea", "") +
+                                " " + boxInfoPref.getString("currentLine", "") +
+                                (boxInfoPref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " +
+                                        boxInfoPref.getInt("wipLineNumber", 0)) +
+                                (boxInfoPref.getInt("stack", 0) == 0 ? "" : " Tumpukan " +
+                                        boxInfoPref.getInt("stack", 0)));
                     }
                 }, 100);
                 tvDestinationLocation.setText("Lokasi Tujuan: -");
 
             } else {
-                if (pref.getString("currentArea", "").equals("Finishing") && locationPref.getString("area", "").equals("WIP")) {
-                    getItemInBox(pref.getInt("wipBoxId", 0));
+                if (boxInfoPref.getString("currentArea", "").equals("Finishing") && locationPref.getString("area", "").equals("WIP")) {
+                    getItemInBox(boxInfoPref.getInt("wipBoxId", 0));
 
                     btnScanBox.setVisibility(View.INVISIBLE);
                     btnScanLocation.setVisibility(View.INVISIBLE);
@@ -204,25 +167,25 @@ public class TransferActivity extends AppCompatActivity {
                     params.height = heightInPx;
                     blueCard.setLayoutParams(params);
 
-                    tvBoxCode.setText("Kode Box: " + pref.getString("boxCode", ""));
+                    tvBoxCode.setText("Kode Box: " + boxInfoPref.getString("boxCode", ""));
 
                     new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            tvCurrentLocation.setText("Lokasi: " + pref.getString("currentArea", "") +
-                                    " " + pref.getString("currentLine", "") +
-                                    (pref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " +
-                                            pref.getInt("wipLineNumber", 0)) +
-                                    (pref.getInt("stack", 0) == 0 ? "" : " Tumpukan " +
-                                            pref.getInt("stack", 0)));
+                            tvCurrentLocation.setText("Lokasi: " + boxInfoPref.getString("currentArea", "") +
+                                    " " + boxInfoPref.getString("currentLine", "") +
+                                    (boxInfoPref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " +
+                                            boxInfoPref.getInt("wipLineNumber", 0)) +
+                                    (boxInfoPref.getInt("stack", 0) == 0 ? "" : " Tumpukan " +
+                                            boxInfoPref.getInt("stack", 0)));
 
                             tvDestinationLocation.setText("Lokasi Tujuan: " + locationPref.getString("area", "") +
                                     " " + locationPref.getString("line", ""));
                         }
                     }, 100);
 
-                } else if (pref.getString("currentArea", "").equals("WIP") && locationPref.getString("area", "").equals("Machining")) {
-                    getItemInBox(pref.getInt("wipBoxId", 0));
+                } else if (boxInfoPref.getString("currentArea", "").equals("WIP") && locationPref.getString("area", "").equals("Machining")) {
+                    getItemInBox(boxInfoPref.getInt("wipBoxId", 0));
 
                     btnScanBox.setVisibility(View.INVISIBLE);
                     btnScanLocation.setVisibility(View.INVISIBLE);
@@ -234,16 +197,16 @@ public class TransferActivity extends AppCompatActivity {
                     tvStack.setVisibility(View.INVISIBLE);
                     spnStack.setVisibility(View.INVISIBLE);
 
-                    tvBoxCode.setText("Kode Box: " + pref.getString("boxCode", ""));
+                    tvBoxCode.setText("Kode Box: " + boxInfoPref.getString("boxCode", ""));
                     new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            tvCurrentLocation.setText("Lokasi: " + pref.getString("currentArea", "") +
-                                    " " + pref.getString("currentLine", "") +
-                                    (pref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " +
-                                            pref.getInt("wipLineNumber", 0)) +
-                                    (pref.getInt("stack", 0) == 0 ? "" : " Tumpukan " +
-                                            pref.getInt("stack", 0)));
+                            tvCurrentLocation.setText("Lokasi: " + boxInfoPref.getString("currentArea", "") +
+                                    " " + boxInfoPref.getString("currentLine", "") +
+                                    (boxInfoPref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " +
+                                            boxInfoPref.getInt("wipLineNumber", 0)) +
+                                    (boxInfoPref.getInt("stack", 0) == 0 ? "" : " Tumpukan " +
+                                            boxInfoPref.getInt("stack", 0)));
 
                             tvDestinationLocation.setText("Lokasi Tujuan: " + locationPref.getString("area", "") +
                                     " " + locationPref.getString("line", ""));
@@ -251,13 +214,13 @@ public class TransferActivity extends AppCompatActivity {
                     }, 100);
 
                     //set stack = 0
-                    editor = pref.edit();
+                    editor = boxInfoPref.edit();
                     editor.putInt("stack", 0);
                     editor.apply();
                 } else {
-                    showAlert(SweetAlertDialog.WARNING_TYPE, "Peringatan", "Tidak dapat melakukan transfer dari " + pref.getString("currentArea", "") + " ke " + locationPref.getString("area", ""));
+                    showAlert(SweetAlertDialog.WARNING_TYPE, "Peringatan", "Tidak dapat melakukan transfer dari " + boxInfoPref.getString("currentArea", "") + " ke " + locationPref.getString("area", ""));
 
-                    getItemInBox(pref.getInt("wipBoxId", 0));
+                    getItemInBox(boxInfoPref.getInt("wipBoxId", 0));
 
                     btnTransfer.setVisibility(View.INVISIBLE);
                     btnScanBox.setVisibility(View.INVISIBLE);
@@ -269,28 +232,28 @@ public class TransferActivity extends AppCompatActivity {
                     tvStack.setVisibility(View.INVISIBLE);
                     spnStack.setVisibility(View.INVISIBLE);
 
-                    tvBoxCode.setText("Kode Box: " + pref.getString("boxCode", ""));
+                    tvBoxCode.setText("Kode Box: " + boxInfoPref.getString("boxCode", ""));
                     new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            tvCurrentLocation.setText("Lokasi: " + pref.getString("currentArea", "") +
-                                    " " + pref.getString("currentLine", "") +
-                                    (pref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " +
-                                            pref.getInt("wipLineNumber", 0)) +
-                                    (pref.getInt("stack", 0) == 0 ? "" : " Tumpukan " +
-                                            pref.getInt("stack", 0)));
+                            tvCurrentLocation.setText("Lokasi: " + boxInfoPref.getString("currentArea", "") +
+                                    " " + boxInfoPref.getString("currentLine", "") +
+                                    (boxInfoPref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " +
+                                            boxInfoPref.getInt("wipLineNumber", 0)) +
+                                    (boxInfoPref.getInt("stack", 0) == 0 ? "" : " Tumpukan " +
+                                            boxInfoPref.getInt("stack", 0)));
                         }
                     }, 100);
                     tvDestinationLocation.setText("Lokasi Tujuan: -");
                 }
             }
         } else {
-            if (pref.getInt("status", 0) == 4) {
+            if (boxInfoPref.getInt("status", 0) == 4) {
                 showAlert(SweetAlertDialog.WARNING_TYPE, "Peringatan", "Box sedang di pending.");
-            } else if (pref.getInt("status", 0) == 3) {
+            } else if (boxInfoPref.getInt("status", 0) == 3) {
                 clearPref();
                 showAlert(SweetAlertDialog.WARNING_TYPE, "Peringatan", "Box masih kosong.");
-            } else if (pref.getInt("status", 0) == 2) {
+            } else if (boxInfoPref.getInt("status", 0) == 2) {
                 showAlert(SweetAlertDialog.WARNING_TYPE, "Peringatan", "Box sedang dalam produksi.");
             }
         }
@@ -355,6 +318,39 @@ public class TransferActivity extends AppCompatActivity {
         });
     }
 
+    public void getLocation(int locationId) {
+        ApiEndPoint apiEndPoint = ApiClient.getClient().create(ApiEndPoint.class);
+        Call<LocationResponse> call = apiEndPoint.getLocation(locationId);
+
+        call.enqueue(new Callback<LocationResponse>() {
+            @Override
+            public void onResponse(Call<LocationResponse> call, Response<LocationResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getResponses()) {
+                    LocationResponse locationResponse = response.body();
+                    SharedPreferences.Editor editor = boxInfoPref.edit();
+                    editor.putString("currentArea", locationResponse.getArea());
+                    editor.putString("currentLine", locationResponse.getLine());
+                    editor.apply();
+                } else {
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<LocationResponse> call, Throwable t) {
+                Log.e("API_ERROR", "Error: " + t.getMessage(), t); // Tambahkan log error
+
+                final Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                    }
+                }, 6000);
+            }
+        });
+    }
+
     public void getItemInBox(int wipBoxId) {
         ApiEndPoint apiEndPoint = ApiClient.getClient().create(ApiEndPoint.class);
         Call<ItemInBoxResponse> call = apiEndPoint.getItemInBox(wipBoxId);
@@ -371,7 +367,7 @@ public class TransferActivity extends AppCompatActivity {
                     }
 
                     if (lvItemInBox != null) {
-                        ItemInBoxAdapter adapter = new ItemInBoxAdapter(TransferActivity.this, itemInBoxList);
+                        ListViewItemAdapter adapter = new ListViewItemAdapter(TransferActivity.this, itemInBoxList);
                         lvItemInBox.setAdapter(adapter);
                     } else {
                         Log.e("UI_ERROR", "ListView lvItemInBox tidak ditemukan");
@@ -431,7 +427,7 @@ public class TransferActivity extends AppCompatActivity {
     public void transferBox() {
         String modifiedBy = (loginPref.getInt("role", 0) == 1) ? "wip" : "mc";
 
-        int wipBoxId = pref.getInt("wipBoxId", 0);
+        int wipBoxId = boxInfoPref.getInt("wipBoxId", 0);
         int locationId = locationPref.getInt("locationId", 0);
 
         if (wipBoxId == 0 || locationId == 0) {
@@ -449,7 +445,7 @@ public class TransferActivity extends AppCompatActivity {
                     if (!isFinishing() && !isDestroyed()) {
                         new SweetAlertDialog(TransferActivity.this, SweetAlertDialog.SUCCESS_TYPE)
                                 .setTitleText("Berhasil")
-                                .setContentText("Berhasil transfer box " + pref.getString("boxCode", ""))
+                                .setContentText("Berhasil transfer box " + boxInfoPref.getString("boxCode", ""))
                                 .setConfirmText("Ok")
                                 .setConfirmButtonBackgroundColor(Color.parseColor("#121481"))
                                 .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
@@ -466,8 +462,8 @@ public class TransferActivity extends AppCompatActivity {
                     }
                 } else {
                     Log.e("API_RESPONSE", "Response gagal: " + response.code() + " - " + response.message());
-                    showAlert(SweetAlertDialog.ERROR_TYPE, "Error", "Terjadi kesalahan saat transfer box " + pref.getString("boxCode", ""));
-                    Toast.makeText(getApplicationContext(), "Terjadi kesalahan saat transfer box " + pref.getString("boxCode", ""), Toast.LENGTH_SHORT).show();
+                    showAlert(SweetAlertDialog.ERROR_TYPE, "Error", "Terjadi kesalahan saat transfer box " + boxInfoPref.getString("boxCode", ""));
+                    Toast.makeText(getApplicationContext(), "Terjadi kesalahan saat transfer box " + boxInfoPref.getString("boxCode", ""), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -538,7 +534,7 @@ public class TransferActivity extends AppCompatActivity {
     }
 
     public void clearPref(){
-        SharedPreferences.Editor editor = pref.edit();
+        SharedPreferences.Editor editor = boxInfoPref.edit();
         editor.clear();
         editor.apply();
 

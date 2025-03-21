@@ -4,15 +4,25 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+import id.co.fim.wipinformationsystemmobile.APIResponseCallback;
 import id.co.fim.wipinformationsystemmobile.R;
+import id.co.fim.wipinformationsystemmobile.responses.ApiEndPoint;
+import id.co.fim.wipinformationsystemmobile.responses.StatusResponse;
+import id.co.fim.wipinformationsystemmobile.services.ApiClient;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SplashActivity extends AppCompatActivity {
     private SharedPreferences prefLogin;
-    private String loginStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,22 +31,51 @@ public class SplashActivity extends AppCompatActivity {
 
         prefLogin = getSharedPreferences("loginPref",MODE_PRIVATE);
 
-        loginStatus = prefLogin.getString("login","0");
-
-        new Handler().postDelayed(new Runnable() {
+        checkConnection(new APIResponseCallback() {
             @Override
-            public void run() {
-                if (loginStatus.equals("1")){
-                    Intent intent = new Intent(SplashActivity.this, MenuActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                }else{
-                    Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            public void onResult(boolean isTrue) {
+                if (isTrue) {
+                    if (prefLogin.getString("login","0").equals("1")){
+                        Intent intent = new Intent(SplashActivity.this, MenuActivity.class);
+                        startActivity(intent);
+                        finish();
+                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                    } else {
+                        Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "Tidak dapat terhubung dengan server", Toast.LENGTH_SHORT).show();
                 }
             }
-        }, 2000);
+        });
+    }
+
+    public void checkConnection(APIResponseCallback callback) {
+        ApiEndPoint apiEndPoint = ApiClient.getClient().create(ApiEndPoint.class);
+        Call<StatusResponse> call = apiEndPoint.checkConnection();
+        call.enqueue(new Callback<StatusResponse>() {
+            @Override
+            public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onResult(response.body().getResponses());
+                } else {
+                    callback.onResult(false);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StatusResponse> call, Throwable t) {
+                Log.e("API_ERROR", "Error: " + t.getMessage(), t);
+                Toast.makeText(getApplicationContext(), "Tidak dapat terhubung dengan server", Toast.LENGTH_SHORT).show();
+                final Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(() -> {
+                    callback.onResult(false);
+                }, 6000);
+            }
+        });
     }
 
     @Override

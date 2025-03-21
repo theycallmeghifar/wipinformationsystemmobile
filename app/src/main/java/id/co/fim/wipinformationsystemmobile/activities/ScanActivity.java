@@ -36,7 +36,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ScanActivity extends AppCompatActivity {
-    private SharedPreferences pref;
+    private SharedPreferences boxInfoPref;
     private SharedPreferences locationPref;
     private SharedPreferences scanTypePref;
     private SurfaceView surfaceView;
@@ -58,7 +58,7 @@ public class ScanActivity extends AppCompatActivity {
         tvError.setVisibility(View.INVISIBLE);
 
         //Inisialisasi preferences
-        pref = getSharedPreferences("boxInfo", MODE_PRIVATE);
+        boxInfoPref = getSharedPreferences("boxInfo", MODE_PRIVATE);
         locationPref = getSharedPreferences("location", MODE_PRIVATE);
         scanTypePref = getSharedPreferences("scanType", MODE_PRIVATE);
         scanType = scanTypePref.getString("type","");
@@ -160,7 +160,7 @@ public class ScanActivity extends AppCompatActivity {
             public void onResponse(Call<BoxInfoResponse> call, Response<BoxInfoResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getResponses()) {
                     BoxInfoResponse boxInfoResponse = response.body();
-                    SharedPreferences.Editor editor = pref.edit();
+                    SharedPreferences.Editor editor = boxInfoPref.edit();
 
                     editor.putInt("wipBoxId", boxInfoResponse.getWipBoxId());
                     editor.putInt("wipBoxDetailId", boxInfoResponse.getWipBoxDetailId());
@@ -182,7 +182,7 @@ public class ScanActivity extends AppCompatActivity {
                     Log.d("DATA FROM SERVER", "currentLocationId: " + boxInfoResponse.getLocationId());
                     Log.d("DATA FROM SERVER", "stack: " + boxInfoResponse.getStack());
                     Log.d("DATA FROM SERVER", "status: " + boxInfoResponse.getStatus());
-                    Log.d("DATA FROM SERVER", "scanned: " + pref.getString("scanned", ""));
+                    Log.d("DATA FROM SERVER", "scanned: " + boxInfoPref.getString("scanned", ""));
 
                     Intent i = new Intent(ScanActivity.this, TransferActivity.class);
                     startActivity(i);
@@ -227,7 +227,7 @@ public class ScanActivity extends AppCompatActivity {
                     editor.putString("scanned", "1");
                     editor.apply();
 
-                    editor = pref.edit();
+                    editor = boxInfoPref.edit();
 
                     editor.putInt("destinationLocationId", locationResponse.getLocationId());
                     editor.apply();

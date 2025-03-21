@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- LinearLayout untuk Item Name, Item Code, dan Quantity -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="1">
+
+        <!-- Nama Item -->
+        <TextView
+            android:id="@+id/tvItemName"
+            android:fontFamily="@font/sfprodisplayregular"
+            android:textColor="@android:color/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <!-- Kode Item -->
+        <TextView
+            android:id="@+id/tvItemCode"
+            android:fontFamily="@font/sfprodisplayregular"
+            android:textColor="@android:color/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"/>
+
+        <!-- Layout Horizontal untuk Quantity dan Input -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <!-- Label Quantity -->
+            <TextView
+                android:id="@+id/tvQuantity"
+                android:fontFamily="@font/sfprodisplayregular"
+                android:textColor="@android:color/black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quantity"
+                android:textSize="14sp"
+                android:layout_gravity="center_vertical"
+                android:paddingEnd="8dp"/>
+
+            <!-- Input Quantity -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textfieldQuantity"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:boxStrokeColor="@color/blue">
+
+                <EditText
+                    android:id="@+id/etQuantity"
+                    android:layout_width="100dp"
+                    android:layout_height="40dp"
+                    android:hint="Quantity"
+                    android:inputType="number"
+                    android:fontFamily="@font/sfprodisplayregular"
+                    android:textColor="@android:color/black"
+                    android:textCursorDrawable="@null"
+                    android:backgroundTint="@android:color/black"/>
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Button di sebelah kanan -->
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="Hapus"
+        android:padding="8dp"
+        android:backgroundTint="@color/red"
+        android:textColor="@android:color/white"
+        android:layout_marginStart="8dp"
+        app:cornerRadius="8dp"/>
+</LinearLayout>

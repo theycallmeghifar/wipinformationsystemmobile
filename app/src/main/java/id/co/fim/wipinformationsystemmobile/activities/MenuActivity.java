@@ -1,9 +1,11 @@
 package id.co.fim.wipinformationsystemmobile.activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,6 +14,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import id.co.fim.wipinformationsystemmobile.R;
@@ -58,7 +62,18 @@ public class MenuActivity extends AppCompatActivity {
         });
 
         cardRetur.setOnClickListener(v -> {
+            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(MenuActivity.this);
+            View view = LayoutInflater.from(MenuActivity.this).inflate(R.layout.retur_dialog, null);
+            bottomSheetDialog.setContentView(view);
+            view.setBackgroundResource(R.drawable.bottom_dialog_background);
+            bottomSheetDialog.show();
 
+            bottomSheetDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialogInterface) {
+
+                }
+            });
         });
 
         cardClear.setOnClickListener(v -> {
