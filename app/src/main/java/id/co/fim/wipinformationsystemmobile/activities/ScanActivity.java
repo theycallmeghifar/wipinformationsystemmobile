@@ -13,6 +13,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -58,10 +59,28 @@ public class ScanActivity extends AppCompatActivity {
         tvError.setVisibility(View.INVISIBLE);
 
         //Inisialisasi preferences
-        boxInfoPref = getSharedPreferences("boxInfo", MODE_PRIVATE);
-        locationPref = getSharedPreferences("location", MODE_PRIVATE);
         scanTypePref = getSharedPreferences("scanType", MODE_PRIVATE);
+
         scanType = scanTypePref.getString("type","");
+        if (scanTypePref.getString("transaction","").equals("transfer")) {
+            boxInfoPref = getSharedPreferences("transferBoxInfo", MODE_PRIVATE);
+        } else if (scanTypePref.getString("transaction","").equals("changeType")) {
+            boxInfoPref = getSharedPreferences("changeTypeBoxInfo", MODE_PRIVATE);
+        } else if (scanTypePref.getString("transaction","").equals("pending")) {
+            boxInfoPref = getSharedPreferences("pendingBoxInfo", MODE_PRIVATE);
+        } else {
+            boxInfoPref = getSharedPreferences("clearBoxInfo", MODE_PRIVATE);
+        }
+
+        if (scanTypePref.getString("transaction","").equals("transfer")) {
+            locationPref = getSharedPreferences("transferLocation", MODE_PRIVATE);
+        } else if (scanTypePref.getString("transaction","").equals("changeType")) {
+            locationPref = getSharedPreferences("changeTypeLocation", MODE_PRIVATE);
+        } else if (scanTypePref.getString("transaction","").equals("pending")) {
+            locationPref = getSharedPreferences("pendingLocation", MODE_PRIVATE);
+        } else {
+            locationPref = getSharedPreferences("clearLocation", MODE_PRIVATE);
+        }
 
         // Cek izin kamera sebelum memulai scanner
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -165,7 +184,7 @@ public class ScanActivity extends AppCompatActivity {
                     editor.putInt("wipBoxId", boxInfoResponse.getWipBoxId());
                     editor.putInt("wipBoxDetailId", boxInfoResponse.getWipBoxDetailId());
                     editor.putString("boxCode", boxInfoResponse.getBoxCode());
-                    editor.putInt("currentLocationId", boxInfoResponse.getLocationId());
+                    editor.putInt("locationId", boxInfoResponse.getLocationId());
                     editor.putInt("wipLineNumber", boxInfoResponse.getWipLineNumber());
                     editor.putInt("stack", boxInfoResponse.getStack());
                     editor.putInt("status", boxInfoResponse.getStatus());
@@ -176,18 +195,22 @@ public class ScanActivity extends AppCompatActivity {
                     editor.putString("type", "");
                     editor.apply();
 
-                    Log.d("DATA FROM SERVER", "wipBoxId: " + boxInfoResponse.getWipBoxId());
-                    Log.d("DATA FROM SERVER", "wipBoxDetailId: " + boxInfoResponse.getWipBoxDetailId());
-                    Log.d("DATA FROM SERVER", "boxCode: " + boxInfoResponse.getBoxCode());
-                    Log.d("DATA FROM SERVER", "currentLocationId: " + boxInfoResponse.getLocationId());
-                    Log.d("DATA FROM SERVER", "stack: " + boxInfoResponse.getStack());
-                    Log.d("DATA FROM SERVER", "status: " + boxInfoResponse.getStatus());
-                    Log.d("DATA FROM SERVER", "scanned: " + boxInfoPref.getString("scanned", ""));
+                    String menu = scanTypePref.getString("transaction", "");
+                    Class<?> targetActivity;
+                    if (menu.equals("transfer")) {
+                        targetActivity = TransferActivity.class;
+                    } else if (menu.equals("changeType")) {
+                        targetActivity = ChangeTypeActivity.class;
+                    } else if (menu.equals("pending")) {
+                        targetActivity = PendingActivity.class;
+                    } else {
+                        targetActivity = ClearActivity.class;
+                    }
 
-                    Intent i = new Intent(ScanActivity.this, TransferActivity.class);
-                    startActivity(i);
+                    startActivity(new Intent(ScanActivity.this, targetActivity));
                     finish();
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
                 } else {
                     showError("DATA TIDAK DITEMUKAN");
                 }
@@ -236,12 +259,21 @@ public class ScanActivity extends AppCompatActivity {
                     editor.putString("type", "");
                     editor.apply();
 
-                    Intent i = new Intent(ScanActivity.this, TransferActivity.class);
-                    startActivity(i);
+                    String menu = scanTypePref.getString("transaction", "");
+                    Class<?> targetActivity;
+                    if (menu.equals("transfer")) {
+                        targetActivity = TransferActivity.class;
+                    } else if (menu.equals("changeType")) {
+                        targetActivity = ChangeTypeActivity.class;
+                    } else if (menu.equals("pending")) {
+                        targetActivity = PendingActivity.class;
+                    } else {
+                        targetActivity = ClearActivity.class;
+                    }
+
+                    startActivity(new Intent(ScanActivity.this, targetActivity));
                     finish();
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                } else {
-
                 }
             }
 
@@ -280,5 +312,25 @@ public class ScanActivity extends AppCompatActivity {
         if (cameraSource != null) {
             cameraSource.release();
         }
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        String menu = scanTypePref.getString("transaction", "");
+        Class<?> targetActivity;
+        if (menu.equals("transfer")) {
+            targetActivity = TransferActivity.class;
+        } else if (menu.equals("changeType")) {
+            targetActivity = ChangeTypeActivity.class;
+        } else if (menu.equals("pending")) {
+            targetActivity = PendingActivity.class;
+        } else {
+            targetActivity = ClearActivity.class;
+        }
+
+        startActivity(new Intent(ScanActivity.this, targetActivity));
+        finish();
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 }

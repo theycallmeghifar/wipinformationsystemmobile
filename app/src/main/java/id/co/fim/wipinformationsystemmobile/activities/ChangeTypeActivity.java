@@ -7,9 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -24,14 +22,18 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import com.google.gson.Gson;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import id.co.fim.wipinformationsystemmobile.APIResponseCallback;
 import id.co.fim.wipinformationsystemmobile.R;
-import id.co.fim.wipinformationsystemmobile.adapter.ListViewItemAdapter;
+import id.co.fim.wipinformationsystemmobile.adapter.EditListViewItemAdapter;
 import id.co.fim.wipinformationsystemmobile.model.ItemInBox;
+import id.co.fim.wipinformationsystemmobile.request.EditWipBoxDetail;
 import id.co.fim.wipinformationsystemmobile.responses.ApiEndPoint;
 import id.co.fim.wipinformationsystemmobile.responses.ItemInBoxResponse;
 import id.co.fim.wipinformationsystemmobile.responses.LocationResponse;
@@ -41,29 +43,30 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class TransferActivity extends AppCompatActivity {
+public class ChangeTypeActivity extends AppCompatActivity {
     private SharedPreferences loginPref;
     private SharedPreferences boxInfoPref;
     private SharedPreferences locationPref;
     private SharedPreferences scanTypePref;
-    private TextView tvTitle;
-    private TextView tvPreScan;
     private CardView blueCard;
     private ImageView btnBack;
+    private TextView tvTitle;
+    private TextView tvPreScan;
+    private TextView tvNumber;
+    private TextView tvStack;
     private ImageView imgPreScan;
     private EditText etBoxCode;
     private EditText etCurrentLocation;
     private EditText etDestinationLocation;
-    private TextView tvNumber;
-    private TextView tvStack;
     private Spinner spnNumber;
     private Spinner spnStack;
     private ListView lvItemInBox;
     private Button btnScanBox;
     private Button btnScanLocation;
-    private Button btnTransfer;
+    private Button btnRetur;
     private ProgressBar progressBar;
 
+    private EditListViewItemAdapter adapter;
     private List<ItemInBox> itemInBoxList = new ArrayList<>();
     private int selectedNumber;
     private int selectedStack;
@@ -72,7 +75,7 @@ public class TransferActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_transfer);
+        setContentView(R.layout.activity_change_type);
 
         //inisiasi objek pada view
         btnBack = findViewById(R.id.btnBack);
@@ -90,7 +93,7 @@ public class TransferActivity extends AppCompatActivity {
         lvItemInBox = findViewById(R.id.lvItemInBox);
         btnScanBox = findViewById(R.id.btnScanBox);
         btnScanLocation = findViewById(R.id.btnScanLocation);
-        btnTransfer = findViewById(R.id.btnTransfer);
+        btnRetur = findViewById(R.id.btnRetur);
         progressBar = findViewById(R.id.progressBar);
 
         // Tampilkan loading
@@ -98,17 +101,26 @@ public class TransferActivity extends AppCompatActivity {
 
         //inisiasi preference data
         loginPref = getSharedPreferences("loginPref",MODE_PRIVATE);
-        boxInfoPref = getSharedPreferences("transferBoxInfo",MODE_PRIVATE);
-        locationPref = getSharedPreferences("transferLocation", MODE_PRIVATE);
+        boxInfoPref = getSharedPreferences("changeTypeBoxInfo",MODE_PRIVATE);
+        locationPref = getSharedPreferences("changeTypeLocation", MODE_PRIVATE);
         scanTypePref = getSharedPreferences("scanType", MODE_PRIVATE);
         SharedPreferences.Editor editor = scanTypePref.edit();
         editor.putString("type", "");
-        editor.putString("transaction", "transfer");
+        editor.putString("transaction", "changeType");
         editor.apply();
 
+        //listener utntuk delete btn pada list
+        adapter = new EditListViewItemAdapter(this, itemInBoxList);
+        adapter.setOnItemDeleteListener(position -> {
+            Log.d("DEBUG", "Menghapus item di posisi: " + position + " - " + itemInBoxList.get(position).getItemName());
+            itemInBoxList.remove(position);
+            adapter.notifyDataSetChanged(); // Refresh list
+        });
+        lvItemInBox.setAdapter(adapter);
+
         //ambil data lokasi box saat ini
-        if (boxInfoPref.getString("area", "").equals("")) {
-            getLocation(boxInfoPref.getInt("locationId", 0));
+        if (boxInfoPref.getString("area", "").equals("")){
+           getLocation(boxInfoPref.getInt("locationId", 0));
         }
 
         //ambil data itemInBox
@@ -119,6 +131,7 @@ public class TransferActivity extends AppCompatActivity {
         //hapus elemen halaman default
         clearPage();
 
+        //logic tampilan dan data pada halaman
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -128,8 +141,8 @@ public class TransferActivity extends AppCompatActivity {
                     imgPreScan.setVisibility(View.VISIBLE);
                     tvPreScan.setVisibility(View.VISIBLE);
                     btnScanBox.setVisibility(View.VISIBLE);
-                } else if (boxInfoPref.getInt("status", 0) == 1) {
-                    //saat box sudah di scan dan status box siap produksi
+                } else if (boxInfoPref.getInt("status", 0) == 2) {
+                    //saat box sudah di scan dan status box sedang dalam produksi
                     if (boxInfoPref.getInt("destinationLocationId", 0) == 0) {
                         // sebelum scan lokasi tujuan
                         tvTitle.setVisibility(View.VISIBLE);
@@ -143,15 +156,13 @@ public class TransferActivity extends AppCompatActivity {
                         etDestinationLocation.setVisibility(View.VISIBLE);
 
                         etBoxCode.setText(boxInfoPref.getString("boxCode", ""));
-                        etCurrentLocation.setText(boxInfoPref.getString("area", "") + " " + boxInfoPref.getString("line", "") +
-                                (boxInfoPref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " + boxInfoPref.getInt("wipLineNumber", 0)) +
-                                (boxInfoPref.getInt("stack", 0) == 0 ? "" : " Tumpukan " + boxInfoPref.getInt("stack", 0)));
+                        etCurrentLocation.setText(boxInfoPref.getString("area", "") +
+                                " " + boxInfoPref.getString("line", ""));
                     } else {
                         //setelah lokasi tujuan di scan
-                        if (boxInfoPref.getString("area", "").equals("Finishing") && locationPref.getString("area", "").equals("WIP")) {
-                            //lokasi tujuan WIP
+                        if (boxInfoPref.getString("area", "").equals("Machining") && locationPref.getString("area", "").equals("WIP")) {
                             tvTitle.setVisibility(View.VISIBLE);
-                            btnTransfer.setVisibility(View.VISIBLE);
+                            btnRetur.setVisibility(View.VISIBLE);
                             findViewById(R.id.textInputBoxCode).setVisibility(View.VISIBLE);
                             findViewById(R.id.textInputCurrentLocation).setVisibility(View.VISIBLE);
                             findViewById(R.id.textInputDestinationLocation).setVisibility(View.VISIBLE);
@@ -171,7 +182,7 @@ public class TransferActivity extends AppCompatActivity {
                                     21, 22, 23, 24, 25, 26, 27, 28, 29, 30};
                             Integer[] stackOptions = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
                             ArrayAdapter<Integer> numberAdapter = new ArrayAdapter<>(
-                                    TransferActivity.this,
+                                    ChangeTypeActivity.this,
                                     R.layout.spinner_item,
                                     numberOptions
                             );
@@ -179,7 +190,7 @@ public class TransferActivity extends AppCompatActivity {
                             spnNumber.setAdapter(numberAdapter);
 
                             ArrayAdapter<Integer> stackAdapter = new ArrayAdapter<>(
-                                    TransferActivity.this,
+                                    ChangeTypeActivity.this,
                                     R.layout.spinner_item,
                                     stackOptions
                             );
@@ -187,56 +198,32 @@ public class TransferActivity extends AppCompatActivity {
                             spnStack.setAdapter(stackAdapter);
 
                             etBoxCode.setText(boxInfoPref.getString("boxCode", ""));
-                            etCurrentLocation.setText(boxInfoPref.getString("area", "") + " " + boxInfoPref.getString("line", ""));
-                            etDestinationLocation.setText(locationPref.getString("area", "") + " " + locationPref.getString("line", ""));
-                        } else if (boxInfoPref.getString("area", "").equals("WIP") && locationPref.getString("area", "").equals("Machining")) {
-                            //lokasi tujuan machining
-                            tvTitle.setVisibility(View.VISIBLE);
-                            btnTransfer.setVisibility(View.VISIBLE);
-                            findViewById(R.id.textInputBoxCode).setVisibility(View.VISIBLE);
-                            findViewById(R.id.textInputCurrentLocation).setVisibility(View.VISIBLE);
-                            findViewById(R.id.textInputDestinationLocation).setVisibility(View.VISIBLE);
-                            blueCard.setVisibility(View.VISIBLE);
-                            etBoxCode.setVisibility(View.VISIBLE);
-                            etCurrentLocation.setVisibility(View.VISIBLE);
-                            etDestinationLocation.setVisibility(View.VISIBLE);
-
-                            etBoxCode.setText(boxInfoPref.getString("boxCode", ""));
-                            etCurrentLocation.setText(boxInfoPref.getString("area", "") + " " + boxInfoPref.getString("line", "") +
-                                    " No. " + boxInfoPref.getInt("wipLineNumber", 0) + " Tumpukan " + boxInfoPref.getInt("stack", 0));
-                            etDestinationLocation.setText(locationPref.getString("area", "") + " " + locationPref.getString("line", ""));
-
-                            //set stack = 0
-                            SharedPreferences.Editor editor = scanTypePref.edit();
-                            editor = boxInfoPref.edit();
-                            editor.putInt("stack", 0);
-                            editor.apply();
+                            etCurrentLocation.setText(boxInfoPref.getString("area", "") +
+                                    " " + boxInfoPref.getString("line", ""));
+                            etDestinationLocation.setText(locationPref.getString("area", "") +
+                                    " " + locationPref.getString("line", ""));
                         } else {
-                            //salah lokasi tujuan
-                            showAlert(SweetAlertDialog.WARNING_TYPE, "Peringatan", "Tidak dapat melakukan transfer dari " + boxInfoPref.getString("area", "") + " ke " + locationPref.getString("area", ""));
-
-                            getItemInBox(boxInfoPref.getInt("wipBoxId", 0));
+                            showAlert(SweetAlertDialog.WARNING_TYPE, "Peringatan", "Tidak dapat melakukan retur dari " + boxInfoPref.getString("area", "") + " ke " + locationPref.getString("area", ""));
 
                             tvTitle.setVisibility(View.VISIBLE);
                             findViewById(R.id.textInputBoxCode).setVisibility(View.VISIBLE);
                             findViewById(R.id.textInputCurrentLocation).setVisibility(View.VISIBLE);
                             findViewById(R.id.textInputDestinationLocation).setVisibility(View.VISIBLE);
+                            btnScanLocation.setVisibility(View.VISIBLE);
+                            blueCard.setVisibility(View.VISIBLE);
                             etBoxCode.setVisibility(View.VISIBLE);
                             etCurrentLocation.setVisibility(View.VISIBLE);
                             etDestinationLocation.setVisibility(View.VISIBLE);
-                            blueCard.setVisibility(View.VISIBLE);
-                            btnScanLocation.setVisibility(View.VISIBLE);
 
                             etBoxCode.setText(boxInfoPref.getString("boxCode", ""));
-                            etCurrentLocation.setText(boxInfoPref.getString("area", "") + " " + boxInfoPref.getString("line", "") +
-                                    (boxInfoPref.getInt("wipLineNumber", 0) == 0 ? "" : " No. " + boxInfoPref.getInt("wipLineNumber", 0)) +
-                                    (boxInfoPref.getInt("stack", 0) == 0 ? "" : " Tumpukan " + boxInfoPref.getInt("stack", 0)));
+                            etCurrentLocation.setText(boxInfoPref.getString("area", "") +
+                                    " " + boxInfoPref.getString("line", ""));
                         }
                     }
                 } else {
                     scanBoxPage();
                     if (boxInfoPref.getInt("status", 0) == 4) {
-                        new SweetAlertDialog(TransferActivity.this, SweetAlertDialog.WARNING_TYPE)
+                        new SweetAlertDialog(ChangeTypeActivity.this, SweetAlertDialog.WARNING_TYPE)
                                 .setTitleText("Peringatan")
                                 .setContentText("Box sedang di pending.")
                                 .setConfirmText("Ok")
@@ -250,7 +237,7 @@ public class TransferActivity extends AppCompatActivity {
                                 })
                                 .show();
                     } else if (boxInfoPref.getInt("status", 0) == 3 || boxInfoPref.getInt("status", 0) == 0) {
-                        new SweetAlertDialog(TransferActivity.this, SweetAlertDialog.WARNING_TYPE)
+                        new SweetAlertDialog(ChangeTypeActivity.this, SweetAlertDialog.WARNING_TYPE)
                                 .setTitleText("Peringatan")
                                 .setContentText("Box masih kosong.")
                                 .setConfirmText("Ok")
@@ -263,10 +250,10 @@ public class TransferActivity extends AppCompatActivity {
                                     }
                                 })
                                 .show();
-                    } else if (boxInfoPref.getInt("status", 0) == 2) {
-                        new SweetAlertDialog(TransferActivity.this, SweetAlertDialog.WARNING_TYPE)
+                    } else if (boxInfoPref.getInt("status", 0) == 1) {
+                        new SweetAlertDialog(ChangeTypeActivity.this, SweetAlertDialog.WARNING_TYPE)
                                 .setTitleText("Peringatan")
-                                .setContentText("Box sedang dalam proses machining.")
+                                .setContentText("Box belum masuk proses machining.")
                                 .setConfirmText("Ok")
                                 .setConfirmButtonBackgroundColor(Color.parseColor("#121481"))
                                 .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
@@ -289,19 +276,19 @@ public class TransferActivity extends AppCompatActivity {
 
         btnScanBox.setOnClickListener(v -> {
             scanTypePref.edit().putString("type", "box").apply();
-            startActivity(new Intent(TransferActivity.this, ScanActivity.class));
+            startActivity(new Intent(ChangeTypeActivity.this, ScanActivity.class));
             finish();
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         });
 
         btnScanLocation.setOnClickListener(v -> {
             scanTypePref.edit().putString("type", "location").apply();
-            startActivity(new Intent(TransferActivity.this, ScanActivity.class));
+            startActivity(new Intent(ChangeTypeActivity.this, ScanActivity.class));
             finish();
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         });
 
-        btnTransfer.setOnClickListener(v -> {
+        btnRetur.setOnClickListener(v -> {
             getBoxOnSameStack(new APIResponseCallback() {
                 @Override
                 public void onResult(boolean isTrue) {
@@ -311,7 +298,14 @@ public class TransferActivity extends AppCompatActivity {
                                 locationPref.getString("line", "") + " No. " +
                                 selectedNumber + " Tumpukan " + selectedStack, Toast.LENGTH_SHORT).show();
                     } else {
-                        transferBox();
+                        changeType(new APIResponseCallback() {
+                            @Override
+                            public void onResult(boolean isTrue) {
+                                if (isTrue) {
+                                    editWipBoxDetail();
+                                }
+                            }
+                        });
                     }
                 }
             });
@@ -383,21 +377,9 @@ public class TransferActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ItemInBoxResponse> call, Response<ItemInBoxResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getResponses()) {
-                    ItemInBoxResponse itemInBoxResponse = response.body();
-
                     itemInBoxList.clear();
-                    for (ItemInBox item : itemInBoxResponse.getData()) {
-                        itemInBoxList.add(new ItemInBox(item.getItemCode(), item.getItemName(), item.getQuantity()));
-                    }
-
-                    if (lvItemInBox != null) {
-                        ListViewItemAdapter adapter = new ListViewItemAdapter(TransferActivity.this, itemInBoxList);
-                        lvItemInBox.setAdapter(adapter);
-                    } else {
-                        Log.e("UI_ERROR", "ListView lvItemInBox tidak ditemukan");
-                    }
-
-
+                    itemInBoxList.addAll(response.body().getData());
+                    adapter.notifyDataSetChanged();
                 } else {
 
                 }
@@ -448,49 +430,22 @@ public class TransferActivity extends AppCompatActivity {
         });
     }
 
-    public void transferBox() {
+    public void changeType(APIResponseCallback callback) {
         String modifiedBy = (loginPref.getInt("role", 0) == 1) ? "wip" : "mc";
-        int status = (locationPref.getString("area", "").equals("WIP")) ? 1 : 2;
-
-        int wipBoxId = boxInfoPref.getInt("wipBoxId", 0);
-        int locationId = locationPref.getInt("locationId", 0);
-
-        if (wipBoxId == 0 || locationId == 0) {
-            showAlert(SweetAlertDialog.ERROR_TYPE, "Error", "Data tidak lengkap untuk transfer box.");
-            return;
-        }
-
-
-
         ApiEndPoint apiEndPoint = ApiClient.getClient().create(ApiEndPoint.class);
-        Call<StatusResponse> call = apiEndPoint.transferBox(wipBoxId, locationId, selectedNumber, selectedStack, modifiedBy, status);
-
+        Call<StatusResponse> call = apiEndPoint.changeType(boxInfoPref.getInt("wipBoxId", 0), locationPref.getInt("locationId", 0), selectedNumber, selectedStack, modifiedBy, 1);
         call.enqueue(new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getResponses()) {
                     if (!isFinishing() && !isDestroyed()) {
-                        new SweetAlertDialog(TransferActivity.this, SweetAlertDialog.SUCCESS_TYPE)
-                                .setTitleText("Berhasil")
-                                .setContentText("Berhasil transfer box " + boxInfoPref.getString("boxCode", ""))
-                                .setConfirmText("Ok")
-                                .setConfirmButtonBackgroundColor(Color.parseColor("#121481"))
-                                .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-                                    @Override
-                                    public void onClick(SweetAlertDialog sDialog) {
-                                        clearPref();
-                                        sDialog.dismissWithAnimation();
-                                        startActivity(new Intent(TransferActivity.this, MenuActivity.class));
-                                        finish();
-                                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                    }
-                                })
-                                .show();
+                        callback.onResult(response.body().getResponses());
                     }
                 } else {
+                    callback.onResult(false);
                     Log.e("API_RESPONSE", "Response gagal: " + response.code() + " - " + response.message());
-                    showAlert(SweetAlertDialog.ERROR_TYPE, "Error", "Terjadi kesalahan saat transfer box " + boxInfoPref.getString("boxCode", ""));
-                    Toast.makeText(getApplicationContext(), "Terjadi kesalahan saat transfer box " + boxInfoPref.getString("boxCode", ""), Toast.LENGTH_SHORT).show();
+                    showAlert(SweetAlertDialog.ERROR_TYPE, "Error", "Terjadi kesalahan saat retur box " + boxInfoPref.getString("boxCode", ""));
+                    Toast.makeText(getApplicationContext(), "Terjadi kesalahan saat retur box " + boxInfoPref.getString("boxCode", ""), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -503,16 +458,74 @@ public class TransferActivity extends AppCompatActivity {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        transferBox(); // Coba ulangi setelah 6 detik
+                        changeType(callback);
                     }
                 }, 6000);
             }
         });
     }
 
+    public void editWipBoxDetail() {
+        String modifiedBy = (loginPref.getInt("role", 0) == 1) ? "wip" : "mc";
+        EditWipBoxDetail request = new EditWipBoxDetail(boxInfoPref.getInt("wipBoxId", 0), itemInBoxList);
+
+        // Log request sebelum dikirim ke API
+        Gson gson = new Gson();
+        Log.d("REQUEST_BODY", gson.toJson(request));
+
+        ApiEndPoint apiEndPoint = ApiClient.getClient().create(ApiEndPoint.class);
+        Call<StatusResponse> call = apiEndPoint.editWipBoxDetail(request);
+
+        call.enqueue(new Callback<StatusResponse>() {
+            @Override
+            public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
+                Log.d("API_RESPONSE", "HTTP Code: " + response.code());
+                try {
+                    // Log response yang diterima
+                    String responseBody = response.body() != null ? gson.toJson(response.body()) : "NULL";
+                    Log.d("API_RESPONSE", "Response Body: " + responseBody);
+
+                    new SweetAlertDialog(ChangeTypeActivity.this, SweetAlertDialog.SUCCESS_TYPE)
+                            .setTitleText("Berhasil")
+                            .setContentText("Berhasil retur box " + boxInfoPref.getString("boxCode", ""))
+                            .setConfirmText("Ok")
+                            .setConfirmButtonBackgroundColor(Color.parseColor("#121481"))
+                            .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                @Override
+                                public void onClick(SweetAlertDialog sDialog) {
+                                    clearPref();
+                                    sDialog.dismissWithAnimation();
+                                    startActivity(new Intent(ChangeTypeActivity.this, MenuActivity.class));
+                                    finish();
+                                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                                }
+                            })
+                            .show();
+
+                    if (!response.isSuccessful()) {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "NULL";
+                        Log.e("API_ERROR", "Error Body: " + errorBody);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StatusResponse> call, Throwable t) {
+                Log.e("API_ERROR", "Error: " + t.getMessage(), t);
+                showAlert(SweetAlertDialog.ERROR_TYPE, "Kesalahan Jaringan", "Gagal menghubungi server. Periksa koneksi internet Anda.");
+
+                final Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(() -> editWipBoxDetail(), 6000);
+            }
+        });
+    }
+
     public void showAlert (int type, String title, String contentText) {
         if (isFinishing()) return;
-        new SweetAlertDialog(TransferActivity.this, type)
+
+        new SweetAlertDialog(ChangeTypeActivity.this, type)
                 .setTitleText(title)
                 .setContentText(contentText)
                 .setConfirmText("Ok")
@@ -527,7 +540,7 @@ public class TransferActivity extends AppCompatActivity {
     }
 
     public void confirmationMessageCancel() {
-        new SweetAlertDialog(TransferActivity.this, SweetAlertDialog.WARNING_TYPE)
+        new SweetAlertDialog(ChangeTypeActivity.this, SweetAlertDialog.WARNING_TYPE)
                 .setTitleText("Peringatan")
                 .setContentText("Ingin ke halaman menu?")
                 .setConfirmText("Ya")
@@ -540,7 +553,7 @@ public class TransferActivity extends AppCompatActivity {
 
                         clearPref();
 
-                        startActivity(new Intent(TransferActivity.this, MenuActivity.class));
+                        startActivity(new Intent(ChangeTypeActivity.this, MenuActivity.class));
                         finish();
                         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                     }
@@ -570,7 +583,7 @@ public class TransferActivity extends AppCompatActivity {
         blueCard.setVisibility(View.INVISIBLE);
         btnScanBox.setVisibility(View.VISIBLE);
         btnScanLocation.setVisibility(View.INVISIBLE);
-        btnTransfer.setVisibility(View.INVISIBLE);
+        btnRetur.setVisibility(View.INVISIBLE);
     }
 
     public void clearPage () {
@@ -590,7 +603,7 @@ public class TransferActivity extends AppCompatActivity {
         blueCard.setVisibility(View.INVISIBLE);
         btnScanBox.setVisibility(View.INVISIBLE);
         btnScanLocation.setVisibility(View.INVISIBLE);
-        btnTransfer.setVisibility(View.INVISIBLE);
+        btnRetur.setVisibility(View.INVISIBLE);
     }
 
     public void clearPref(){

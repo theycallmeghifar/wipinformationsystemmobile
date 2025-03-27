@@ -32,23 +32,23 @@
             android:padding="16dp">
 
             <ImageView
-                android:id="@+id/imgTransfer"
+                android:id="@+id/imgChangeType"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                app:srcCompat="@drawable/transfer_icon"
+                app:srcCompat="@drawable/change_type_icon"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
-                android:id="@+id/tvTransfer"
+                android:id="@+id/tvChangeType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Transfer"
-                android:textSize="16sp"
+                android:text="Ganti Tipe"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
-                app:layout_constraintTop_toBottomOf="@id/imgTransfer"
+                app:layout_constraintTop_toBottomOf="@id/imgChangeType"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:fontFamily="@font/sfprodisplayregular"/>
@@ -77,26 +77,26 @@
             android:padding="16dp">
 
             <ImageView
-                android:id="@+id/imgClear"
+                android:id="@+id/imgPending"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/clear_icon" />
+                app:srcCompat="@drawable/pending_icon" />
 
             <TextView
-                android:id="@+id/tvClear"
+                android:id="@+id/tvPending"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/sfprodisplayregular"
-                android:text="Clear"
+                android:text="Pending"
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/imgClear" />
+                app:layout_constraintTop_toBottomOf="@id/imgPending" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 

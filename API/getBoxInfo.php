@@ -10,7 +10,8 @@ require_once 'mysqli.php';
         $sql = $MySQLiconn->query("SELECT wb.wipBoxId, wbd.wipBoxDetailId, wb.boxCode, wb.locationId, wb.wipLineNumber, wb.stack, wb.status
                     FROM wip_box wb
                     JOIN wip_box_detail wbd ON wbd.wipBoxId = wb.wipBoxId
-                    WHERE wb.boxCode = '$boxCode' 
+                    WHERE wb.boxCode = '$boxCode'
+                    AND wb.status != 3 
                     GROUP BY wipBoxId");
         
       if(mysqli_num_rows($sql) > 0) {

@@ -20,6 +20,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/headerLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -63,7 +64,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/sfprodisplaymedium"
         android:gravity="left"
-        android:text="Transfer"
+        android:text="Pending"
         android:textColor="@android:color/black"
         android:textSize="25sp"
         android:layout_marginLeft="20dp"
@@ -100,15 +101,14 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputCurrentLocation"
         style="@style/TextInputLayoutHintStyle"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/textInputBoxCode"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/textInputDestinationLocation"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="10dp"
         android:layout_marginStart="20dp"
-        android:layout_marginEnd="5dp"
-        app:layout_constraintHorizontal_weight="0.45"
+        android:layout_marginEnd="20dp"
         app:boxStrokeColor="@color/blue">
 
         <EditText
@@ -120,6 +120,8 @@
             android:fontFamily="@font/sfprodisplayregular"
             android:textColor="@android:color/black"
             android:textCursorDrawable="@null"
+            app:layout_constraintTop_toBottomOf="@id/textInputBoxCode"
+            app:layout_constraintStart_toStartOf="parent"
             android:backgroundTint="@android:color/black"
             android:enabled="false" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -127,15 +129,14 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputDestinationLocation"
         style="@style/TextInputLayoutHintStyle"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/textInputBoxCode"
-        app:layout_constraintStart_toEndOf="@id/textInputCurrentLocation"
+        app:layout_constraintTop_toBottomOf="@id/textInputCurrentLocation"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="10dp"
-        android:layout_marginStart="5dp"
+        android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        app:layout_constraintHorizontal_weight="0.45"
         app:boxStrokeColor="@color/blue">
 
         <EditText
@@ -147,73 +148,11 @@
             android:fontFamily="@font/sfprodisplayregular"
             android:textColor="@android:color/black"
             android:textCursorDrawable="@null"
+            app:layout_constraintTop_toBottomOf="@id/textInputBoxCode"
+            app:layout_constraintStart_toStartOf="parent"
             android:backgroundTint="@android:color/black"
             android:enabled="false" />
     </com.google.android.material.textfield.TextInputLayout>
-
-    <TextView
-        android:id="@+id/tvNumber"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/sfprodisplayregular"
-        android:gravity="start"
-        android:text="Nomor"
-        android:textColor="@android:color/black"
-        android:textSize="14sp"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="5dp"
-        app:layout_constraintTop_toBottomOf="@id/textInputDestinationLocation"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/tvStack"
-        app:layout_constraintHorizontal_weight="1"/>
-
-    <TextView
-        android:id="@+id/tvStack"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/sfprodisplayregular"
-        android:gravity="start"
-        android:text="Tumpukan"
-        android:textColor="@android:color/black"
-        android:textSize="14sp"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginEnd="20dp"
-        app:layout_constraintTop_toBottomOf="@id/textInputDestinationLocation"
-        app:layout_constraintStart_toEndOf="@id/tvNumber"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_weight="1"/>
-
-    <Spinner
-        android:id="@+id/spnNumber"
-        android:fontFamily="@font/sfprodisplaymedium"
-        android:textColor="@android:color/black"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="5dp"
-        android:background="@drawable/spinner_background"
-        app:layout_constraintHorizontal_weight="0.45"
-        app:layout_constraintTop_toBottomOf="@id/tvNumber"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/spnStack"/>
-
-    <Spinner
-        android:id="@+id/spnStack"
-        android:fontFamily="@font/sfprodisplaymedium"
-        android:textColor="@android:color/black"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginEnd="20dp"
-        android:background="@drawable/spinner_background"
-        app:layout_constraintHorizontal_weight="0.45"
-        app:layout_constraintTop_toBottomOf="@id/tvStack"
-        app:layout_constraintStart_toEndOf="@id/spnNumber"
-        app:layout_constraintEnd_toEndOf="parent"/>
 
     <ImageView
         android:id="@+id/imgPreScan"
@@ -257,7 +196,7 @@
             android:padding="16dp">
 
             <TextView
-                android:id="@+id/tvBoxCode"
+                android:id="@+id/tvItemTitle"
                 android:fontFamily="@font/sfprodisplaymedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -312,26 +251,11 @@
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <Button
-        android:id="@+id/btnScanLocation"
+        android:id="@+id/btnPending"
         android:fontFamily="@font/sfprodisplayregular"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Scan Lokasi Tujuan"
-        android:textSize="16sp"
-        android:textColor="#ffffff"
-        android:backgroundTint="@color/blue"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="15dp"
-        app:cornerRadius="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-
-    <Button
-        android:id="@+id/btnTransfer"
-        android:fontFamily="@font/sfprodisplayregular"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Transfer"
+        android:text="Pending"
         android:textSize="16sp"
         android:textColor="#ffffff"
         android:backgroundTint="@color/blue"

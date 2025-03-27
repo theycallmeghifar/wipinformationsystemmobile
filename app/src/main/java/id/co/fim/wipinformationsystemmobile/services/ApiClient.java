@@ -5,7 +5,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
     //public static final String BASE_URL="http://www.fim.co.id:9080/WarehousingSystemMobile/API/";
-    public static final String BASE_URL = "http://192.168.101.109:80/wipinformationsystemmobile/API/";
+    public static final String BASE_URL = "http://192.168.101.134:80/wipinformationsystemmobile/API/";
     private static Retrofit retrofit=null;
 
     public static Retrofit getClient() {

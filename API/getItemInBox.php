@@ -12,7 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sql = $MySQLiconn->query("SELECT wbd.itemCode, i.itemName, wbd.quantity
                 FROM wip_box_detail wbd
                 JOIN item i ON i.itemCode = wbd.itemCode
-                WHERE wipBoxId = '$wipBoxId' ");
+                WHERE wipBoxId = '$wipBoxId'
+                AND wbd.status = 1");
     
     if ($sql->num_rows > 0) {
         $response["responses"] = true;

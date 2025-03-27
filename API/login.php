@@ -10,7 +10,7 @@ require_once 'mysqli.php';
 
         $sql = $MySQLiconn->query("SELECT username, password, role
                   FROM user
-                  WHERE username = '$username' and password = '$password' AND role IN (1,2)");
+                  WHERE username = '$username' and password = '$password'");
         
       if(mysqli_num_rows($sql) > 0){
         while($row = $sql->fetch_array()){

@@ -9,11 +9,13 @@ require_once 'mysqli.php';
         $wipLineNumber = $_POST['wipLineNumber'];
         $stack = $_POST['stack'];
         $modifiedBy = $_POST['modifiedBy'];
+        $status = $_POST['status'];
 
         $sql = $MySQLiconn->query("UPDATE wip_box
                     SET locationId = '$locationId',
                         wipLineNumber = '$wipLineNumber',
                         stack = '$stack',
+                        status = '$status',
                         modifiedBy = '$modifiedBy',
                         modifiedDate = NOW()
                     WHERE wipBoxId = '$wipBoxId'");

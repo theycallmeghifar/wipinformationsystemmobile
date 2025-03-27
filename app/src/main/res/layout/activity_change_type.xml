@@ -20,6 +20,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/headerCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -63,7 +64,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/sfprodisplaymedium"
         android:gravity="left"
-        android:text="Transfer"
+        android:text="Ganti Tipe"
         android:textColor="@android:color/black"
         android:textSize="25sp"
         android:layout_marginLeft="20dp"
@@ -327,11 +328,11 @@
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <Button
-        android:id="@+id/btnTransfer"
+        android:id="@+id/btnRetur"
         android:fontFamily="@font/sfprodisplayregular"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Transfer"
+        android:text="Retur"
         android:textSize="16sp"
         android:textColor="#ffffff"
         android:backgroundTint="@color/blue"
